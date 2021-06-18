@@ -641,7 +641,7 @@ impl<T: Clone> Grid<T> {
             //unsafe { Some(self.get_unchecked(row, col)) }
             //self.data.get_unchecked(row * self.cols + col);
         } else {
-            panic!("");
+            panic!("Row or col is out of bounds");
         }
     }
 }
@@ -1150,6 +1150,7 @@ mod test {
     #[test]
     fn replace() {
         let mut grid: Grid<u8> = grid![[1, 2, 3][3, 4, 5]];
+        assert_eq!(grid.get(0, 2), Some(&3));
         grid.replace(0, 2, 10);
         assert_eq!(grid.get(0, 2), Some(&10));
     }
