@@ -133,8 +133,8 @@ impl<T: Clone> Grid<T> {
         }
         Grid {
             data: vec![T::default(); rows * cols],
-            cols: cols,
-            rows: rows,
+            cols,
+            rows,
         }
     }
 
@@ -145,8 +145,8 @@ impl<T: Clone> Grid<T> {
         }
         Grid {
             data: vec![data; rows * cols],
-            cols: cols,
-            rows: rows,
+            cols,
+            rows,
         }
     }
 
@@ -175,11 +175,11 @@ impl<T: Clone> Grid<T> {
         let rows = vec.len();
         if rows == 0 {
             if cols == 0 {
-                return Grid {
+                Grid {
                     data: vec![],
                     rows: 0,
                     cols: 0,
-                };
+                }
             } else {
                 panic!("Vector length is zero, but cols is {:?}", cols);
             }
@@ -189,7 +189,7 @@ impl<T: Clone> Grid<T> {
             Grid {
                 data: vec,
                 rows: rows / cols,
-                cols: cols,
+                cols,
             }
         }
     }
@@ -369,7 +369,7 @@ impl<T: Clone> Grid<T> {
     pub fn iter_row(&self, row: usize) -> Iter<T> {
         if row < self.rows {
             let start = row * self.cols;
-            return self.data[start..(start + self.cols)].iter();
+            self.data[start..(start + self.cols)].iter()
         } else {
             panic!(
                 "out of bounds. Row must be less than {:?}, but is {:?}.",
@@ -398,7 +398,7 @@ impl<T: Clone> Grid<T> {
         if row < self.rows {
             let cols = self.cols;
             let start = row * cols;
-            return self.data[start..(start + cols)].iter_mut();
+            self.data[start..(start + cols)].iter_mut()
         } else {
             panic!(
                 "out of bounds. Row must be less than {:?}, but is {:?}.",
@@ -514,9 +514,9 @@ impl<T: Clone> Grid<T> {
             if self.rows == 0 {
                 self.cols = 0;
             }
-            return Some(row);
+            Some(row)
         } else {
-            return None;
+            None
         }
     }
 
@@ -546,9 +546,9 @@ impl<T: Clone> Grid<T> {
             if self.cols == 0 {
                 self.rows = 0;
             }
-            return Some(col);
+            Some(col)
         } else {
-            return None;
+            None
         }
     }
 
@@ -624,6 +624,26 @@ impl<T: Clone> Grid<T> {
     pub fn into_vec(self) -> Vec<T> {
         self.data
     }
+    /// Replaces the data at a given index
+    ///
+    /// ```
+    /// use grid::*;
+    /// let mut grid: Grid<u8> = grid![[1, 2, 3][3, 4, 5]];
+    /// grid.replace(0, 2, 10);
+    /// assert_eq!(grid.get(0, 2), Some(&10));
+    /// ```
+    ///
+    /// # Panics
+    /// Panics if the row or col is out of bounds
+    pub fn replace(&mut self, row: usize, col: usize, data: T) {
+        if row < self.rows && col < self.cols {
+            self.data[row * self.cols + col] = data;
+            //unsafe { Some(self.get_unchecked(row, col)) }
+            //self.data.get_unchecked(row * self.cols + col);
+        } else {
+            panic!("");
+        }
+    }
 }
 
 impl<T: Clone> Clone for Grid<T> {
@@ -654,7 +674,7 @@ impl<T: Clone> Index<usize> for Grid<T> {
 
 impl<T: Clone> IndexMut<usize> for Grid<T> {
     fn index_mut(&mut self, idx: usize) -> &mut Self::Output {
-        &mut self.data[(idx * &self.cols)..]
+        &mut self.data[(idx * self.cols)..]
     }
 }
 
@@ -1125,5 +1145,12 @@ mod test {
     fn size() {
         let grid = Grid::init(1, 2, 3);
         assert_eq!(grid.size(), (1, 2));
+    }
+
+    #[test]
+    fn replace() {
+        let mut grid: Grid<u8> = grid![[1, 2, 3][3, 4, 5]];
+        grid.replace(0, 2, 10);
+        assert_eq!(grid.get(0, 2), Some(&10));
     }
 }
